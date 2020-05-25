@@ -1,0 +1,5 @@
+FROM openjdk:8
+ADD target/EmployeeCrud-0.0.1-SNAPSHOT.jar EmployeeCrud-0.0.1-SNAPSHOT.jar
+copy . .
+EXPOSE 7000
+ENTRYPOINT ["java", "-jar", "EmployeeCrud-0.0.1-SNAPSHOT.jar"]

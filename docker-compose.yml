@@ -1,0 +1,23 @@
+version: "3.8"
+services:
+  mysql-standalone:
+    image: mysql/mysql-server:8.0.13
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=employee
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+      - MYSQL_ROOT_HOST="%"
+    ports:
+      - 3306:3306
+
+  DockerTesting:
+    image: employeecrud:latest
+    ports:
+      - 7000:7000
+    restart: on-failure
+    build:
+      context: ./
+      dockerfile: DockerFile
+    depends_on:
+      - mysql-standalone
