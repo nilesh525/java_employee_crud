@@ -1,8 +1,14 @@
 package com.practice.EmployeeCrud.cotroller;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.mail.MessagingException;
+import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,26 +19,57 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.practice.EmployeeCrud.Model.Employee;
+import com.practice.EmployeeCrud.Model.MailSignature;
 import com.practice.EmployeeCrud.ServiceImpl.EmployeeServiceImpl;
+import com.practice.EmployeeCrud.sendmail.EmailManagment;
 
-@CrossOrigin(origins = {"http://localhost:8080"})
+@CrossOrigin(origins = {"*"},allowedHeaders = "*")
 @RestController
 public class ControllerClass {
 	
 	@Autowired
 	public EmployeeServiceImpl employeeserv;
 	
+	@Autowired
+	EmailManagment emailManagment;
+	
 	@PostMapping("/create")
-	public Employee createEmployee(@RequestBody Employee employee){
-		System.out.println(employee.toString());
-		Employee emp = employeeserv.createEmployee(employee);
-		return emp;
+	public ResponseEntity<Employee> createEmployee(@RequestBody Employee employee) throws Exception{
+		Employee emp = new Employee();
+		try {
+			Employee checkEmp = employeeserv.getEmployeeByEmail(employee.getEmail());
+			if(checkEmp!=null)
+				return ResponseEntity.ok(checkEmp);
+			else {
+				Employee persistEmp = new Employee();
+				String tomailuser;
+				if((employee.getSource().equals("gamil")) ) {
+					tomailuser = employee.getEmail().replaceAll("@gmail.com", "");
+					persistEmp.setName(tomailuser);
+					persistEmp.setDesciption("Developer");
+					persistEmp.setEmail(employee.getEmail());
+					persistEmp.setPwd(employee.getPwd());
+					persistEmp.setSource(employee.getSource());
+					emp = employeeserv.createEmployee(persistEmp);
+					String mailid=emp.getEmail();
+					emailManagment.sendmail(mailid);
+				}else {
+					persistEmp = employee;
+					emp = employeeserv.createEmployee(persistEmp);
+					String mailid=emp.getEmail();
+					emailManagment.sendmail(mailid);
+				}
+			}
+		} catch (MessagingException | IOException e) {
+			System.out.println("Error "+e.getMessage());
+		}
+		return ResponseEntity.ok(emp);
 	}
 	
 	@GetMapping("/getEmp")
 	public List<Employee> getEmployee(){
 		List<Employee> list = employeeserv.getAllEmployee();
-		return list;
+		return list.stream().filter(emp->emp.isActive()).collect(Collectors.toList());
 	}
 	
 	@PostMapping("/editEmp")
@@ -40,21 +77,54 @@ public class ControllerClass {
 		int id = emp.getId();
 		Employee checkId = employeeserv.getEmployeeByID(id);
 		Employee employee;
+		Employee updateEmp=new Employee();
+		updateEmp.setId(emp.getId());
+		updateEmp.setName(emp.getName());
+		updateEmp.setEmail(checkId.getEmail());
+		updateEmp.setPwd(emp.getPwd());
+		updateEmp.setDesciption(emp.getDesciption());
+		updateEmp.setActive(checkId.isActive());
+		updateEmp.setSource(checkId.getSource());
 		if(checkId.getName()!=null)
-			employee =employeeserv.updateEmployee(emp);
+			employee =employeeserv.updateEmployee(updateEmp);
 		else
-			throw new Exception("Employee Not Found");
+			throw new Exception("Not Found");
 		return employee;
 	}
 	
 	@GetMapping("getEmpById")
-	public Employee getOne(@RequestParam int id) {
-		return employeeserv.getEmployeeByID(id);
+	public ResponseEntity<Employee> getOne(@RequestParam int id) {
+		Employee emp = employeeserv.getEmployeeByID(id);
+		if(emp.isActive())
+			return ResponseEntity.ok(emp);
+		else
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+	}
+	@GetMapping("getEmpByEmail")
+	public ResponseEntity<Employee> getOneByEmail(@RequestParam String email,@RequestParam String pass) {
+		Employee emp = employeeserv.getEmployeeByEmail(email);
+		if(emp!=null && emp.isActive() && emp.getPwd().equals(pass))
+			return ResponseEntity.ok(emp);
+		else
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 	}
 	
 	@DeleteMapping("/deleteEmp")
+	@Transactional
 	public ResponseEntity<String> deleteEmployee(@RequestParam int id) {
 		employeeserv.deleteEmployee(id);
 		return ResponseEntity.ok("DELETE_SUCCESS");
+	}
+	
+	@PostMapping("/sendmail")
+	public String mailSend(@RequestBody MailSignature mailsig) {
+		try {
+			Employee emp = employeeserv.getEmployeeByEmail(mailsig.getFromMail());
+			emailManagment.sendmailcostom(mailsig,emp.getPwd());
+		} catch (MessagingException | IOException e) {
+			System.out.println(e.getMessage());
+			return "Can not send message .";
+		}
+		return "message sent";
 	}
 }

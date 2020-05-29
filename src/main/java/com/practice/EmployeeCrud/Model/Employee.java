@@ -25,15 +25,30 @@ public class Employee {
 	
 	@Column(name="desciption",nullable = true)
 	private String desciption;
+	
+	@Column(name="email",nullable = false)
+	private String email;
+	
+	@Column(name="pass",nullable = false)
+	private String pwd;
+	
+	@Column(name="is_active",columnDefinition = "boolean default true")
+	private boolean isActive=true;
+	
+	@Column(name="source",nullable = false)
+	private String source;
+
+	public boolean isActive() {
+		return isActive;
+	}
+
+	public void setActive(boolean isActive) {
+		this.isActive = isActive;
+	}
 
 	public int getId() {
 		return id;
 	}
-
-	public void setId(int id) {
-		this.id = id;
-	}
-
 	public String getName() {
 		return name;
 	}
@@ -49,12 +64,40 @@ public class Employee {
 	public void setDesciption(String desciption) {
 		this.desciption = desciption;
 	}
+	
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getPwd() {
+		return pwd;
+	}
+
+	public void setPwd(String pwd) {
+		this.pwd = pwd;
+	}
+
+	public String getSource() {
+		return source;
+	}
+
+	public void setSource(String source) {
+		this.source = source;
+	}
+	
+
+	public void setId(int id) {
+		this.id = id;
+	}
 
 	@Override
 	public String toString() {
-		return "Employee [id=" + id + ", name=" + name + ", desciption=" + desciption + "]";
+		return "Employee [id=" + id + ", name=" + name + ", desciption=" + desciption + ", email=" + email + ", pwd="
+				+ pwd + ", isActive=" + isActive + ", source=" + source + "]";
 	}
-	
-	
 	
 }

@@ -27,11 +27,15 @@ public class EmployeeServiceImpl {
 	}
 
 	public void deleteEmployee(int id) {
-		employeeRepos.deleteById(id);
+		employeeRepos.setActive(id);
 	}
 
 	public Employee getEmployeeByID(int id) {
 		
 		return employeeRepos.getOne(id);
+	}
+
+	public Employee getEmployeeByEmail(String email) {
+		return employeeRepos.getEmployeeByEmail(email);
 	}
 }
