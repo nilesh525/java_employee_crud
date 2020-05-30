@@ -11,10 +11,10 @@ import com.practice.EmployeeCrud.Model.Employee;
 public interface EmployeeRepository extends JpaRepository<Employee, Integer>{
 
 	@Modifying
-	@Query(value="update employee.tbl_employees e set e.is_active = false where e.id = :id", nativeQuery = true)
+	@Query(value="update tbl_employees e set e.is_active = false where e.id = :id", nativeQuery = true)
 	void setActive(int id);
 
-	@Query(value = "select * from employee.tbl_employees e where e.email = :email",nativeQuery = true)
+	@Query(value = "select * from tbl_employees e where e.email = :email",nativeQuery = true)
 	Employee getEmployeeByEmail(String email);
 	
 }

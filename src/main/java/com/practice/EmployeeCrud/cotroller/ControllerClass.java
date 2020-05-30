@@ -38,8 +38,12 @@ public class ControllerClass {
 		Employee emp = new Employee();
 		try {
 			Employee checkEmp = employeeserv.getEmployeeByEmail(employee.getEmail());
-			if(checkEmp!=null)
-				return ResponseEntity.ok(checkEmp);
+			if(checkEmp!=null) {
+				if(employee.getPwd().equals(checkEmp.getPwd()))
+					return ResponseEntity.ok(checkEmp);
+				else
+					return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+			}
 			else {
 				Employee persistEmp = new Employee();
 				String tomailuser;
