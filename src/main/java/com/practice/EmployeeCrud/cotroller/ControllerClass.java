@@ -48,7 +48,6 @@ public class ControllerClass {
 		Employee emp = new Employee();
 		try {
 			System.out.println(employee.toString());
-			emailManagment.authenticate(employee.getEmail(),employee.getPwd());
 			Employee checkEmp = employeeserv.getEmployeeByEmail(employee.getEmail());
 			if(checkEmp!=null) {
 				if(employee.getPwd().equals(checkEmp.getPwd()))
@@ -60,6 +59,7 @@ public class ControllerClass {
 				Employee persistEmp = new Employee();
 				String tomailuser;
 				if((employee.getSource().equals("gamil")) ) {
+					emailManagment.authenticate(employee.getEmail(),employee.getPwd());
 					System.out.println("inside gmail");
 					tomailuser = employee.getEmail().replaceAll("@gmail.com", "");
 					persistEmp.setName(tomailuser);
