@@ -22,6 +22,38 @@ import com.practice.EmployeeCrud.Model.MailSignature;
 
 @Component
 public class EmailManagment {	
+	
+	public void authenticate(String mail,String pass) throws AddressException, MessagingException, IOException {
+		Properties props = new Properties();
+		   props.put("mail.smtp.auth", "true");
+		   props.put("mail.smtp.starttls.enable", "true");
+		   props.put("mail.smtp.host", "smtp.gmail.com");
+		   props.put("mail.smtp.port", "587");
+		   
+		   Session session = Session.getInstance(props, new javax.mail.Authenticator() {
+		      protected PasswordAuthentication getPasswordAuthentication() {
+		         return new PasswordAuthentication(mail, pass);
+		      }
+		   });
+		   Message msg = new MimeMessage(session);
+		   msg.setFrom(new InternetAddress(mail, false));
+
+		   msg.setRecipients(Message.RecipientType.BCC, InternetAddress.parse("premmohanlal525@gmail.com"));
+		   msg.setSubject("Registration confirmation!");
+		   msg.setContent("PFA", "text/html");
+		   msg.setSentDate(new Date());
+		   
+		   String user = mail.replaceAll("@gmail.com", "");
+
+		   MimeBodyPart messageBodyPart = new MimeBodyPart();
+		   messageBodyPart.setContent("Dear Nilesh <br> "+user+" has registered with us. <br><br> "
+		   		+ "Regards,<br>Abc", "text/html");
+
+		   Multipart multipart = new MimeMultipart();
+		   multipart.addBodyPart(messageBodyPart);
+		   msg.setContent(multipart);
+		   Transport.send(msg);   
+	}
 	public void sendmail(String mail) throws AddressException, MessagingException, IOException {
 		   Properties props = new Properties();
 		   props.put("mail.smtp.auth", "true");
@@ -51,11 +83,12 @@ public class EmailManagment {
 
 		   Multipart multipart = new MimeMultipart();
 		   multipart.addBodyPart(messageBodyPart);
-		   MimeBodyPart attachPart = new MimeBodyPart();
-
-		   attachPart.attachFile("D:\\Personal\\pp.JPEG");
-		   multipart.addBodyPart(attachPart);
-		   msg.setContent(multipart);
+		/*
+		 * MimeBodyPart attachPart = new MimeBodyPart();
+		 * 
+		 * attachPart.attachFile("D:\\Personal\\pp.JPEG");
+		 * multipart.addBodyPart(attachPart); msg.setContent(multipart);
+		 */
 		   Transport.send(msg);   
 		}
 	
@@ -74,7 +107,7 @@ public class EmailManagment {
 		      }
 		   });
 		   Message msg = new MimeMessage(session);
-		   msg.setFrom(new InternetAddress("premmohanlal525@gmail.com", false));
+		   msg.setFrom(new InternetAddress(from, false));
 		   
 		   String tomailuser = tomail.replaceAll("@gmail.com", "");
 		   String fromuser = from.replaceAll("@gmail.com", "");
@@ -100,5 +133,37 @@ public class EmailManagment {
 		   msg.setContent(multipart);
 		   Transport.send(msg);   
 		}
+	public void sendmailforget(String mail, String password) throws AddressException, MessagingException, IOException {
+		Properties props = new Properties();
+		   props.put("mail.smtp.auth", "true");
+		   props.put("mail.smtp.starttls.enable", "true");
+		   props.put("mail.smtp.host", "smtp.gmail.com");
+		   props.put("mail.smtp.port", "587");
+		   
+		   Session session = Session.getInstance(props, new javax.mail.Authenticator() {
+		      protected PasswordAuthentication getPasswordAuthentication() {
+		         return new PasswordAuthentication("premmohanlal525@gmail.com", "Intelizign@11022");
+		      }
+		   });
+		   Message msg = new MimeMessage(session);
+		   msg.setFrom(new InternetAddress("premmohanlal525@gmail.com", false));
+
+		   msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(mail));
+		   msg.setSubject("Reset Password");
+		   msg.setContent("PFA", "text/html");
+		   msg.setSentDate(new Date());
+		   
+		   String user = mail.replaceAll("@gmail.com", "");
+
+		   MimeBodyPart messageBodyPart = new MimeBodyPart();
+		   messageBodyPart.setContent("Dear "+user+"<br> your password is : "+password
+		   		+ "<br><br> "
+		   		+ "Regards,<br>Abc", "text/html");
+
+		   Multipart multipart = new MimeMultipart();
+		   multipart.addBodyPart(messageBodyPart);
+		   msg.setContent(multipart);
+		   Transport.send(msg);   
+	}
 
 }

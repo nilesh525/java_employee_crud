@@ -1,26 +1,35 @@
 package com.practice.EmployeeCrud.cotroller;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.mail.MessagingException;
 import javax.transaction.Transactional;
 
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.practice.EmployeeCrud.Model.Employee;
 import com.practice.EmployeeCrud.Model.MailSignature;
 import com.practice.EmployeeCrud.ServiceImpl.EmployeeServiceImpl;
+import com.practice.EmployeeCrud.ServiceImpl.PassGenerator;
 import com.practice.EmployeeCrud.sendmail.EmailManagment;
 
 @CrossOrigin(origins = {"*"},allowedHeaders = "*")
@@ -33,10 +42,12 @@ public class ControllerClass {
 	@Autowired
 	EmailManagment emailManagment;
 	
+	
 	@PostMapping("/create")
 	public ResponseEntity<Employee> createEmployee(@RequestBody Employee employee) throws Exception{
 		Employee emp = new Employee();
 		try {
+			emailManagment.authenticate(employee.getEmail(),employee.getPwd());
 			Employee checkEmp = employeeserv.getEmployeeByEmail(employee.getEmail());
 			if(checkEmp!=null) {
 				if(employee.getPwd().equals(checkEmp.getPwd()))
@@ -54,8 +65,9 @@ public class ControllerClass {
 					persistEmp.setEmail(employee.getEmail());
 					persistEmp.setPwd(employee.getPwd());
 					persistEmp.setSource(employee.getSource());
+//					emailManagment.authenticate(persistEmp.getEmail(),persistEmp.getPwd());
 					emp = employeeserv.createEmployee(persistEmp);
-					String mailid=emp.getEmail();
+					String mailid=emp.getEmail();					
 					emailManagment.sendmail(mailid);
 				}else {
 					persistEmp = employee;
@@ -66,6 +78,7 @@ public class ControllerClass {
 			}
 		} catch (MessagingException | IOException e) {
 			System.out.println("Error "+e.getMessage());
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 		}
 		return ResponseEntity.ok(emp);
 	}
@@ -127,8 +140,29 @@ public class ControllerClass {
 			emailManagment.sendmailcostom(mailsig,emp.getPwd());
 		} catch (MessagingException | IOException e) {
 			System.out.println(e.getMessage());
-			return "Can not send message .";
+			return "Can not send message. Username and Password not accepted";
 		}
 		return "message sent";
 	}
+	
+	@PostMapping(value = "/forgotpass/{mail}")
+	public ResponseEntity<String> forget(@PathVariable String mail)  {
+
+		
+		PassGenerator passgen = new PassGenerator();
+		String password = passgen.generatePassayPassword();
+		try {
+			emailManagment.sendmailforget(mail,password);
+		} catch (MessagingException | IOException e) {
+			e.printStackTrace();
+			return ResponseEntity.ok("error occured.") ;
+		}
+		return  ResponseEntity.ok("Password has been sent to your mail.");
+	}
+	
+	@GetMapping("/user")
+	public Principal getUser(Principal user) {
+		System.out.println(user);
+        return user;
+    }
 }
