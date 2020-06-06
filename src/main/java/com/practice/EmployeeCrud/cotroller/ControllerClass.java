@@ -47,6 +47,7 @@ public class ControllerClass {
 	public ResponseEntity<Employee> createEmployee(@RequestBody Employee employee) throws Exception{
 		Employee emp = new Employee();
 		try {
+			System.out.println(employee.toString());
 			emailManagment.authenticate(employee.getEmail(),employee.getPwd());
 			Employee checkEmp = employeeserv.getEmployeeByEmail(employee.getEmail());
 			if(checkEmp!=null) {
@@ -59,6 +60,7 @@ public class ControllerClass {
 				Employee persistEmp = new Employee();
 				String tomailuser;
 				if((employee.getSource().equals("gamil")) ) {
+					System.out.println("inside gmail");
 					tomailuser = employee.getEmail().replaceAll("@gmail.com", "");
 					persistEmp.setName(tomailuser);
 					persistEmp.setDesciption("Developer");
