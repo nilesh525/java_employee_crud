@@ -48,7 +48,9 @@ public class ControllerClass {
 		Employee emp = new Employee();
 		try {
 			System.out.println(employee.toString());
-			Employee checkEmp = employeeserv.getEmployeeByEmail(employee.getEmail());
+			Employee checkEmp = null;
+			if(employee.getEmail()!=null)
+				 checkEmp = employeeserv.getEmployeeByEmail(employee.getEmail());
 			if(checkEmp!=null) {
 				if(employee.getPwd().equals(checkEmp.getPwd()))
 					return ResponseEntity.ok(checkEmp);
@@ -63,14 +65,34 @@ public class ControllerClass {
 					System.out.println("inside gmail");
 					tomailuser = employee.getEmail().replaceAll("@gmail.com", "");
 					persistEmp.setName(tomailuser);
-					persistEmp.setDesciption("Developer");
+					persistEmp.setDesciption("NA(Please update)");
 					persistEmp.setEmail(employee.getEmail());
 					persistEmp.setPwd(employee.getPwd());
 					persistEmp.setSource(employee.getSource());
-//					emailManagment.authenticate(persistEmp.getEmail(),persistEmp.getPwd());
 					emp = employeeserv.createEmployee(persistEmp);
 					String mailid=emp.getEmail();					
 					emailManagment.sendmail(mailid);
+				}else if((employee.getSource().equals("facebook")) ) {
+					
+					Employee checkEmpfb = employeeserv.getEmployeeByName(employee.getName());
+					if(checkEmpfb!=null) {
+						emp=checkEmpfb;
+					}else {
+					boolean flag=true;
+					persistEmp.setName(employee.getName());
+					persistEmp.setDesciption("NA(Please update)");
+					if(employee.getEmail()==null) {
+						persistEmp.setEmail("NA(Please update)");
+						flag=false;
+					}else
+						persistEmp.setEmail(employee.getEmail());
+					persistEmp.setPwd(employee.getPwd());
+					persistEmp.setSource(employee.getSource());
+					emp = employeeserv.createEmployee(persistEmp);
+					String mailid=emp.getEmail();	
+					if(flag)
+						emailManagment.sendmail(mailid);
+					}
 				}else {
 					persistEmp = employee;
 					emp = employeeserv.createEmployee(persistEmp);
@@ -162,9 +184,9 @@ public class ControllerClass {
 		return  ResponseEntity.ok("Password has been sent to your mail.");
 	}
 	
-	@GetMapping("/user")
-	public Principal getUser(Principal user) {
-		System.out.println(user);
-        return user;
-    }
+//	@GetMapping("/user")
+//	public Principal getUser(Principal user) {
+//		System.out.println(user);
+//        return user;
+//    }
 }

@@ -17,4 +17,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Integer>{
 	@Query(value = "select * from tbl_employees where email = :email",nativeQuery = true)
 	Employee getEmployeeByEmail(String email);
 	
+	@Query(value = "select * from tbl_employees where name = :name",nativeQuery = true)
+	Employee getEmployeeByName(String name);
+	
 }

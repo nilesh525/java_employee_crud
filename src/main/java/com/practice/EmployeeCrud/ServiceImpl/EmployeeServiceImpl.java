@@ -38,4 +38,8 @@ public class EmployeeServiceImpl {
 	public Employee getEmployeeByEmail(String email) {
 		return employeeRepos.getEmployeeByEmail(email);
 	}
+	
+	public Employee getEmployeeByName(String email) {
+		return employeeRepos.getEmployeeByName(email);
+	}
 }
